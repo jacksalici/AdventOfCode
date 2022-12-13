@@ -1,55 +1,56 @@
-from pprint import pprint
+from collections import deque
 import sys
 
 
-
-
 heightsMap=[]
-minPath=99999999
+minpath=9999999
 
-def backtracking(r, c, list):
-    global minPath
-    print(len(list))
-    if (heightsMap[r][c]=='E' and heightsMap[list[-2][0]][list[-2][1]] == 'z'):
-        if len(list)<minPath:
-            minPath=len(list)-1
-            for i in list:
-                print(heightsMap[i[0]][i[1]], end=" ")
-            print(minPath)
-        return
+def neighbors(r,c):
+    global heightsMap
+    #idea from https://github.com/mebeim/aoc/blob/master/2022/README.md#day-12---hill-climbing-algorithm
+    for nr, nc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):
+        if 0 <= nr < len(heightsMap) and 0 <= nc < len(heightsMap[0]): 
+            if heightsMap[nr][nc] <= heightsMap[r][c] + 1:  
+                yield [nr, nc]
 
-    if (len(list)>minPath):
-        return
+def bfs(r, c, re, ce):
+    visited=[]
+    queue = deque([(0,[r,c])])
+
+    while queue:
+        distance, rc = queue.popleft()
+
+        if (rc == [re, ce]):
+            return distance
+
+        if  rc not in visited:
+            visited+=[rc]
+            
+
+            for neighbor in neighbors(rc[0],rc[1]):
+                if neighbor not in visited:
+                    queue.append([(distance+1),neighbor])
+
+    return 9999999
 
 
-    #up
-    if r>0 and (ord(heightsMap[r-1][c])<ord(heightsMap[r][c])+2 or heightsMap[r][c] == 'S') and ([r-1,c] not in list):
-        backtracking(r-1,c,list+[[r-1,c]])
-    #down
-    if r<len(heightsMap)-1 and (ord(heightsMap[r+1][c])<ord(heightsMap[r][c])+2 or heightsMap[r][c] == 'S') and ([r+1,c] not in list):
-        backtracking(r+1,c,list+[[r+1,c]])
-    #left
-    if c>0 and (ord(heightsMap[r][c-1])<ord(heightsMap[r][c])+2 or heightsMap[r][c] == 'S') and ([r,c-1] not in list):
-        backtracking(r,c-1,list+[[r,c-1]])
-    #right
-    if c<len(heightsMap[0])-1 and (ord(heightsMap[r][c+1])<ord(heightsMap[r][c])+2 or heightsMap[r][c] == 'S') and ([r,c+1] not in list):
-        backtracking(r,c+1,list+[[r,c+1]])
-
-
-with open(sys.argv[1], "r") as file:
+with open(sys.argv[1], "rb") as file:
     #READING
-    for i, line in enumerate(file):
-        heightsMap.append([c for c in line if c.isalpha()])
-        
+    lines = file.read().splitlines()
+    heightsMap = list(map(list, lines))
+
     #CALC
     for r in range(0,len(heightsMap)):
         for c in range(0,len(heightsMap[0])):
-            if heightsMap[r][c]=='S':
-                backtracking(r,c,[[r,c]])
-            
+            if heightsMap[r][c]==ord('S'):
+                heightsMap[r][c]=ord('a')
+                rStart, cStart=r,c
+            if heightsMap[r][c]==ord('E'):
+                rEnd, cEnd=r,c
+                heightsMap[r][c]=ord('z')
     
-print(minPath)
+    minpath = bfs(rStart, cStart, rEnd, cEnd)
 
-        
+print (minpath)
         
             
