@@ -1,8 +1,6 @@
 import sys
 import re
 
-PART_TWO = False
-
 impossible_id_sum = 0
 powers_sum = 0
 with open(sys.argv[1]) as f:
