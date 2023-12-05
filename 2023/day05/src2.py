@@ -8,42 +8,32 @@ class Category:
         self.maps = []
 
     def addMap(self, dest, src, len) -> None:
-        self.maps.append({"dest": dest, "src": src, "len": len})
+        self.maps.append({"dest": dest, "src": src, "len": len, "offset":dest-src})
 
     def convert(self, input):
         output = []
-            
+        
         while input:
             (start, end) = input.pop()
             found = False
-            assert start<end
             
             for map in self.maps:
+                actual_start = max(start, map["src"])
+                actual_end = min(end, map["src"]+map["len"])
                 
-                
-                map_start = map["src"]
-                map_len = map["len"]
-                map_end = map_start + map_len
-                map_dest_start = map["dest"]
-                
-                if end < map_start and start < map_start:
-                    continue
-                if end <= map_end and start < map_start:
-                    input.append((start, map_start))
-                    output.append((map_dest_start,map_dest_start+end-(map_start)))
+                if actual_start<actual_end:
+                    output.append((actual_start+map["offset"], actual_end+map["offset"]))
+                    
+                    if start<actual_start:
+                        input.append((start,actual_start))
+                    if end>actual_end:
+                        input.append((actual_end,end))
                     found = True
-                if end <= map_end and start >= map_start:
-                    output.append((map_dest_start+(start-map_start),map_dest_start+(end-map_start)))
-                    found = True
-                if end > map_end and start >= map_start:
-                    input.append((map_end, end))
-                    output.append((map_dest_start+(start-map_start),map_dest_start+(map_end-map_start)))
-                    found = True
-                if end < map_start and start < map_start:
-                    continue
+                    break
+
 
             if not found:
-                output.append((map_dest_start+(start-map_start),map_dest_start+(end-map_start))) 
+                output.append((start,end))
 
         return output
 
@@ -69,11 +59,11 @@ with open(sys.argv[1]) as f:
 print("Almanac category: ", len(categories))
 from operator import add
 
-locations = list(zip(intitial_seeds[::2], list( map(add, intitial_seeds[::2], intitial_seeds[1::2]) ) ))
+locations = list(zip(intitial_seeds[::2], list(map(add, intitial_seeds[::2], intitial_seeds[1::2]) ) ))
 print("Initial Seeds locations: ", locations)
 
     
 for category in categories:
     locations = category.convert(locations)
 
-print("Final location:", locations) 
+print("Final location:", min(locations)[0]) 
