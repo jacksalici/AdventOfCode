@@ -1,16 +1,20 @@
 import sys
+from functools import cache
+
+REP = 5
 springs_representations = list(
 	zip(
-		[l.split(" ")[0] for l in open(sys.argv[1]).readlines()],
-		[
-			[int(r) for r in l.split(" ")[1].strip().split(",")]
-			for l in open(sys.argv[1]).readlines()
-		],
+		((REP*(l.split(" ")[0] + '?'))[:-1] for l in open(sys.argv[1]).readlines()),
+		[(int(r) for r in (REP * l.split(" ")[1].strip()).split(",")) for l in open(sys.argv[1]).readlines()]
+		
 	)
 )
+for a, b in springs_representations:
+	print(a, b)
 
 
 possibilites = []
+@cache
 def rec(str: str, index: int, groups):
 	if index==len(str):
 		#print(groupBy(str), groups)
